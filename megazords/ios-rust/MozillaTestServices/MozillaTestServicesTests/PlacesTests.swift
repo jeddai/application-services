@@ -434,4 +434,135 @@ class PlacesTests: XCTestCase {
             XCTFail("Not a PlacesError")
         }
     }
+
+    // MARK: Places History Tests
+
+    func testGetVisited() {
+        let db = api.getWriter()
+
+        let unicodeInPath = "http://www.example.com/tëst😀abc"
+        let escapedUnicodeInPath = "http://www.example.com/t%C3%ABst%F0%9F%98%80abc"
+        let unicodeInDomain = "http://www.exämple😀123.com"
+        let escapedUnicodeInDomain = "http://www.xn--exmple123-w2a24222l.com"
+
+        let toAdd = [
+            "https://www.example.com/1",
+            "https://www.example.com/12",
+            "https://www.example.com/123",
+            "https://www.example.com/1234",
+            "https://www.mozilla.com",
+            "https://www.firefox.com",
+            "\(unicodeInPath)/1",
+            "\(escapedUnicodeInPath)/2",
+            "\(unicodeInDomain)/1",
+            "\(escapedUnicodeInDomain)/2",
+        ]
+
+        for url in toAdd {
+            try! db.applyObservation(visitObservation: VisitObservation(url: url, visitType: .link))
+        }
+
+        let toSearch = [
+            ("https://www.example.com", false),
+            ("https://www.example.com/1", true),
+            ("https://www.example.com/12", true),
+            ("https://www.example.com/123", true),
+            ("https://www.example.com/1234", true),
+            ("https://www.example.com/12345", false),
+            // Bad URLs should still work without.
+            ("https://www.example.com:badurl", false),
+
+            ("https://www.mozilla.com", true),
+            ("https://www.firefox.com", true),
+            ("https://www.mozilla.org", false),
+
+            // Dupes should still work
+            ("https://www.example.com/1234", true),
+            ("https://www.example.com/12345", false),
+
+            // The unicode URLs should work when escaped the way we
+            // encountered them
+            ("\(unicodeInPath)/1", true),
+            ("\(escapedUnicodeInPath)/2", true),
+            ("\(unicodeInDomain)/1", true),
+            ("\(escapedUnicodeInDomain)/2", true),
+            // But also the other way.
+            ("\(unicodeInPath)/2", true),
+            ("\(escapedUnicodeInPath)/1", true),
+            ("\(unicodeInDomain)/2", true),
+            ("\(escapedUnicodeInDomain)/1", true),
+        ]
+
+        let visited = try! db.getVisited(urls: toSearch.map { $0.0 })
+
+        XCTAssertEqual(visited.count, toSearch.count)
+
+        for i in 0 ..< visited.count {
+            XCTAssertEqual(visited[i], toSearch[i].1)
+        }
+    }
+
+    func testNoteObservationBadUrl() {
+        let db = api.getWriter()
+
+        do {
+            try db.applyObservation(visitObservation: VisitObservation(url: "http://www.[].com", visitType: .link))
+            XCTFail("Should have thrown a UrlParseFailed")
+        } catch (e: PlacesError.UrlParseFailed(_)) {
+            // OK
+        } catch (_) {
+            XCTFail("Should have thrown a UrlParseFailed")
+        }
+    }
+
+    // Basically equivalent to test_get_visited in rust, but exercises the FFI,
+    // as well as the handling of invalid urls.
+    func testMatchUrl() {
+        let db = api.getWriter()
+
+        let toAdd = [
+            // add twice to ensure its frecency is higher
+            "https://www.example.com/123",
+            "https://www.example.com/123",
+            "https://www.example.com/12345",
+            "https://www.mozilla.com/foo/bar/baz",
+            "https://www.mozilla.com/foo/bar/baz",
+            "https://mozilla.com/a1/b2/c3",
+            "https://news.ycombinator.com/",
+        ]
+
+        for url in toAdd {
+            try! db.applyObservation(visitObservation: VisitObservation(url: url, visitType: .link))
+        }
+        // Should use the origin search
+        XCTAssertEqual("https://www.example.com/", try! db.matchUrl(query: "example.com"))
+        XCTAssertEqual("https://www.example.com/", try! db.matchUrl(query: "www.example.com"))
+        XCTAssertEqual("https://www.example.com/", try! db.matchUrl(query: "https://www.example.com"))
+
+        // Not an origin.
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "example.com/"))
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "www.example.com/"))
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "https://www.example.com/"))
+
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "example.com/1"))
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "www.example.com/1"))
+        XCTAssertEqual("https://www.example.com/123", try! db.matchUrl(query: "https://www.example.com/1"))
+
+        XCTAssertEqual("https://www.example.com/12345", try! db.matchUrl(query: "example.com/1234"))
+        XCTAssertEqual("https://www.example.com/12345", try! db.matchUrl(query: "www.example.com/1234"))
+        XCTAssertEqual("https://www.example.com/12345", try! db.matchUrl(query: "https://www.example.com/1234"))
+
+        XCTAssertEqual("https://www.mozilla.com/foo/", try! db.matchUrl(query: "mozilla.com/"))
+        XCTAssertEqual("https://www.mozilla.com/foo/", try! db.matchUrl(query: "mozilla.com/foo"))
+        XCTAssertEqual("https://www.mozilla.com/foo/bar/", try! db.matchUrl(query: "mozilla.com/foo/"))
+        XCTAssertEqual("https://www.mozilla.com/foo/bar/", try! db.matchUrl(query: "mozilla.com/foo/bar"))
+        XCTAssertEqual("https://www.mozilla.com/foo/bar/baz", try! db.matchUrl(query: "mozilla.com/foo/bar/"))
+        XCTAssertEqual("https://www.mozilla.com/foo/bar/baz", try! db.matchUrl(query: "mozilla.com/foo/bar/baz"))
+        // Make sure the www/non-www doesn't confuse it
+        XCTAssertEqual("https://mozilla.com/a1/b2/", try! db.matchUrl(query: "mozilla.com/a1/"))
+
+        // Actual visit had no www
+        XCTAssertEqual(nil, try! db.matchUrl(query: "www.mozilla.com/a1"))
+        XCTAssertEqual("https://news.ycombinator.com/", try! db.matchUrl(query: "news"))
+    }
 }

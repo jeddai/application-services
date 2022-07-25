@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["logins"] = [{"text":"impl <a class=\"trait\" href=\"error_support/handling/trait.GetErrorHandling.html\" title=\"trait error_support::handling::GetErrorHandling\">GetErrorHandling</a> for <a class=\"enum\" href=\"logins/enum.LoginsError.html\" title=\"enum logins::LoginsError\">LoginsError</a>","synthetic":false,"types":["logins::error::LoginsError"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

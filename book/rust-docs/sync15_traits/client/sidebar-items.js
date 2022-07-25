@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["DeviceType","Enumeration for the different types of device."]],"struct":[["ClientData","Argument to Store::prepare_for_sync. See comment there for more info. Only really intended to be used by tabs engine."],["RemoteClient","Information about a remote client in the clients collection."]]});

@@ -42,12 +42,11 @@ impl EventStoreService {
 
     #[wasm_bindgen(js_name = recordEventForDate)]
     pub fn record_event_at_date(&mut self, event_id: String, date: Date) {
-        let d: DateTime<Utc> = DateTime::parse_from_rfc3339(&date.to_iso_string().as_string().unwrap()).map(|result| result.into()).unwrap();
-        console::log_1(&d.to_string().into());
-        match self.event_store.record_event(event_id, Some(d)) {
+        let date: DateTime<Utc> = DateTime::parse_from_rfc3339(&date.to_iso_string().as_string().unwrap()).map(|result| result.into()).unwrap();
+        match self.event_store.record_event(event_id, Some(date)) {
             Ok(_v) => { },
-            Err(_v) => {
-                console::log_1(&"an error occurred".into())
+            Err(e) => {
+                console::log_2(&"an error occurred".into(), &e.to_string().into())
             }
         };
     }

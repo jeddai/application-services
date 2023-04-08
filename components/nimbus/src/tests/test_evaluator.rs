@@ -188,7 +188,7 @@ fn test_targeting_invalid_transform() -> Result<()> {
     };
     let err = targeting(expression_statement, &ctx.into());
     if let Some(e) = err {
-        if let EnrollmentStatus::Error { reason: _ } = e {
+        if let EnrollmentStatus::EnrollError { reason: _ } = e {
             // OK
         } else {
             panic!("Should have returned an error since the transform doesn't exist")
@@ -366,7 +366,7 @@ fn test_targeting_custom_targeting_attributes() {
     // We haven't defined `is_first_run` here, so this should error out, i.e. return an error.
     assert!(matches!(
         targeting(expression_statement, &ctx.into()),
-        Some(EnrollmentStatus::Error { .. })
+        Some(EnrollmentStatus::EnrollError { .. })
     ));
 }
 
@@ -517,7 +517,7 @@ fn test_invalid_expression() {
 
     assert_eq!(
         targeting(expression_statement, &Default::default()),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "Invalid Expression - didn't evaluate to a bool".to_string()
         })
     )
@@ -530,7 +530,7 @@ fn test_evaluation_error() {
 
     assert!(matches!(
             targeting(expression_statement, &Default::default()),
-            Some(EnrollmentStatus::Error { reason }) if reason.starts_with("EvaluationError:")))
+            Some(EnrollmentStatus::EnrollError { reason }) if reason.starts_with("EvaluationError:")))
 }
 
 #[test]
@@ -755,7 +755,10 @@ fn test_wrong_randomization_units() {
     )
     .unwrap();
     // The status should be `Error`
-    assert!(matches!(enrollment.status, EnrollmentStatus::Error { .. }));
+    assert!(matches!(
+        enrollment.status,
+        EnrollmentStatus::EnrollError { .. }
+    ));
 
     // Fits because of the client_id.
     let available_randomization_units = AvailableRandomizationUnits::with_client_id("bobo");

@@ -140,7 +140,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "'app.foregrounded'|eventSum('Days') > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform Sum requires 2-3 parameters"
                 .to_string()
         })
@@ -150,7 +150,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "1|eventSum('Days', 3, 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: JSON Error: invalid type: floating point `1`, expected a string"
                 .to_string()
         })
@@ -160,7 +160,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "'app.foregrounded'|eventSum(1, 3, 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: JSON Error: invalid type: floating point `1`, expected a string"
                 .to_string()
         })
@@ -170,7 +170,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "'app.foregrounded'|eventSum('Day', 3, 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Behavior error: IntervalParseError: Day is not a valid Interval"
                 .to_string()
         })
@@ -180,7 +180,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "'app.foregrounded'|eventSum('Days', 'test', 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform Sum requires a positive number as the second parameter"
                 .to_string()
         })
@@ -190,7 +190,7 @@ fn test_event_transform_sum_cnz_avg_avgnz_parameters() {
             "'app.foregrounded'|eventSum('Days', 3, 'test') > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform Sum requires a positive number as the third parameter"
                 .to_string()
         })
@@ -206,7 +206,7 @@ fn test_event_transform_last_seen_parameters() {
             "'app.foregrounded'|eventLastSeen() > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform LastSeen requires 1-2 parameters"
                 .to_string()
         })
@@ -216,7 +216,7 @@ fn test_event_transform_last_seen_parameters() {
             "'app.foregrounded'|eventLastSeen('Days', 0, 10) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform LastSeen requires 1-2 parameters"
                 .to_string()
         })
@@ -226,7 +226,7 @@ fn test_event_transform_last_seen_parameters() {
             "1|eventLastSeen('Days', 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: JSON Error: invalid type: floating point `1`, expected a string"
                 .to_string()
         })
@@ -236,7 +236,7 @@ fn test_event_transform_last_seen_parameters() {
             "'app.foregrounded'|eventLastSeen(1, 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: JSON Error: invalid type: floating point `1`, expected a string"
                 .to_string()
         })
@@ -246,7 +246,7 @@ fn test_event_transform_last_seen_parameters() {
             "'app.foregrounded'|eventLastSeen('Day', 0) > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Behavior error: IntervalParseError: Day is not a valid Interval"
                 .to_string()
         })
@@ -256,7 +256,7 @@ fn test_event_transform_last_seen_parameters() {
             "'app.foregrounded'|eventLastSeen('Days', 'test') > 1",
             &th,
         ),
-        Some(EnrollmentStatus::Error {
+        Some(EnrollmentStatus::EnrollError {
             reason: "EvaluationError: Custom error: Transform parameter error: event transform LastSeen requires a positive number as the second parameter"
                 .to_string()
         })

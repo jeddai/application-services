@@ -361,7 +361,7 @@ fn main() -> Result<()> {
                     EnrollmentStatus::NotEnrolled { .. } => "NotEnrolled",
                     EnrollmentStatus::Disqualified { .. } => "Disqualified",
                     EnrollmentStatus::WasEnrolled { .. } => "WasEnrolled",
-                    EnrollmentStatus::Error { .. } => "Error",
+                    EnrollmentStatus::EnrollError { .. } => "Error",
                 };
                 results.insert(key, results.get(&key).unwrap_or(&0) + 1);
             }

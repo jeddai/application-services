@@ -1,0 +1,182 @@
+namespace cirrus {};
+
+dictionary AppContext {
+    string app_name;
+    string app_id;
+    string channel;
+    string? app_version = null;
+    string? app_build = null;
+    string? architecture = null;
+    string? device_manufacturer = null;
+    string? device_model = null;
+    string? locale = null;
+    string? os = null;
+    string? os_version = null;
+    string? android_sdk_version = null;
+    string? debug_tag = null;
+    i64? installation_date = null;
+    string? home_directory = null;
+    JsonObject? custom_targeting_attributes = null;
+};
+
+dictionary TargetingAttributes {
+    AppContext app_context;
+    boolean is_already_enrolled;
+    StringHashSet active_experiments;
+    string? language = null;
+    string? region = null;
+    i32? days_since_install = null;
+    i32? days_since_update = null;
+};
+
+dictionary ExperimentBranch {
+    string slug;
+    i32 ratio;
+};
+
+dictionary EnrollmentChangeEvent {
+    string experiment_slug;
+    string branch_slug;
+    string enrollment_id;
+    EnrollmentChangeEventType change;
+    string? reason = null;
+};
+
+enum EnrollmentChangeEventType {
+    "Enrollment",
+    "EnrollFailed",
+    "Disqualification",
+    "Unenrollment",
+    "UnenrollFailed",
+};
+
+dictionary ExperimentEnrollment {
+    string slug;
+    EnrollmentStatus status;
+};
+
+dictionary EnrolledFeatureConfig {
+    FeatureConfig feature;
+    string slug;
+    string feature_id;
+    string? branch = null;
+};
+
+dictionary FeatureConfig {
+    string feature_id;
+    JsonObject value;
+};
+
+[Enum]
+interface EnrollmentStatus {
+    Enrolled(Uuid enrollment_id, EnrolledReason reason, string branch);
+    NotEnrolled(NotEnrolledReason reason);
+    Disqualified(Uuid enrollment_id, DisqualifiedReason reason, string branch);
+    WasEnrolled(Uuid enrollment_id, string branch, u64 experiment_ended_at);
+    EnrollError(string reason);
+};
+
+enum EnrolledReason {
+    "Qualified",
+    "OptIn"
+};
+
+enum NotEnrolledReason {
+    "OptOut",
+    "NotSelected",
+    "NotTargeted",
+    "EnrollmentsPaused",
+    "FeatureConflict"
+};
+
+enum DisqualifiedReason {
+    "Error",
+    "OptOut",
+    "NotTargeted"
+};
+
+enum RandomizationUnit {
+    "NimbusId",
+    "ClientId"
+};
+
+dictionary BucketConfig {
+    RandomizationUnit randomization_unit;
+    string namespace;
+    u32 start;
+    u32 count;
+    u32 total;
+};
+
+dictionary Branch {
+    string slug;
+    i32 ratio;
+    FeatureConfig? feature = null;
+    sequence<FeatureConfig>? features = null;
+};
+
+dictionary Experiment {
+    string schema_version;
+    string slug;
+    string user_facing_name;
+    string user_facing_description;
+    boolean is_enrollment_paused;
+    BucketConfig bucket_config;
+    sequence<Branch> branches;
+    sequence<string> feature_ids;
+    u32 proposed_enrollment;
+    boolean is_rollout;
+    string? app_name = null;
+    string? app_id = null;
+    string? channel = null;
+    string? targeting = null;
+    string? start_date = null;
+    string? end_date = null;
+    u32? proposed_duration = null;
+    string? reference_branch = null;
+};
+
+dictionary EnrollmentResponse {
+    record<DOMString, EnrolledFeatureConfig> enrolled_feature_config_map;
+    sequence<ExperimentEnrollment> enrollments;
+    sequence<EnrollmentChangeEvent> events;
+};
+
+dictionary EnrollmentRequest {
+    string? client_id;
+    TargetingAttributes context;
+    sequence<Experiment> next_experiments;
+    boolean? is_user_participating = null;
+    sequence<EnrolledFeatureConfig>? prev_experiments = null;
+    sequence<ExperimentEnrollment>? prev_enrollments = null;
+};
+
+[Error]
+enum NimbusError {
+    "InvalidPersistedData", "IOError",
+    "JSONError", "EvaluationError", "InvalidExpression", "InvalidFraction",
+    "TryFromSliceError", "EmptyRatiosError", "OutOfBoundsError","UrlParsingError",
+    "UuidError", "InvalidExperimentFormat",
+    "InvalidPath", "InternalError", "NoSuchExperiment", "NoSuchBranch",
+    "DatabaseNotReady", "VersionParsingError", "TryFromIntError",
+    "ParseIntError", "TransformParameterError", "CirrusError"
+};
+
+[Custom]
+typedef string JsonObject;
+
+[Custom]
+typedef string Value;
+
+[Custom]
+typedef string Uuid;
+
+[Custom]
+typedef string StringHashSet;
+
+interface CirrusClient {
+    constructor();
+
+    [Throws=NimbusError]
+    EnrollmentResponse handle_enrollment(EnrollmentRequest request);
+};

@@ -151,7 +151,7 @@ pub fn evaluate_enrollment(
                         "Could not find a suitable randomization unit for {}. Skipping experiment.",
                         &exp.slug
                     );
-                    EnrollmentStatus::Error {
+                    EnrollmentStatus::EnrollError {
                         reason: "No randomization unit".into(),
                     }
                 }
@@ -270,7 +270,7 @@ pub(crate) fn targeting(
                 reason: NotEnrolledReason::NotTargeted,
             }),
         },
-        Err(e) => Some(EnrollmentStatus::Error {
+        Err(e) => Some(EnrollmentStatus::EnrollError {
             reason: e.to_string(),
         }),
     }

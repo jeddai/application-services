@@ -1671,7 +1671,7 @@ fn test_evolver_experiment_update_error() -> Result<()> {
     let mut events = vec![];
     let existing_enrollment = ExperimentEnrollment {
         slug: exp.slug.clone(),
-        status: EnrollmentStatus::Error {
+        status: EnrollmentStatus::EnrollError {
             reason: "heh".to_owned(),
         },
     };

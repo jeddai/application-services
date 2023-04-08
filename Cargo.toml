@@ -35,6 +35,7 @@ members = [
     "components/webext-storage",
     "components/webext-storage/ffi",
     "megazords/full",
+    "megazords/cirrus",
     "megazords/ios-rust",
     "megazords/ios-rust/focus",
     "tools/protobuf-gen",

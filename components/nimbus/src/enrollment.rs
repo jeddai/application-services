@@ -168,7 +168,7 @@ impl ExperimentEnrollment {
         out_enrollment_events: &mut Vec<EnrollmentChangeEvent>,
     ) -> Result<Self> {
         Ok(match self.status {
-            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::Error { .. } => {
+            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::EnrollError { .. } => {
                 if !is_user_participating || updated_experiment.is_enrollment_paused {
                     self.clone()
                 } else {
@@ -222,7 +222,7 @@ impl ExperimentEnrollment {
                         targeting_helper,
                     )?;
                     match evaluated_enrollment.status {
-                        EnrollmentStatus::Error { .. } => {
+                        EnrollmentStatus::EnrollError { .. } => {
                             let updated_enrollment =
                                 self.disqualify_from_enrolled(DisqualifiedReason::Error);
                             out_enrollment_events.push(updated_enrollment.get_change_event());
@@ -297,7 +297,7 @@ impl ExperimentEnrollment {
             } => (branch, enrollment_id),
             EnrollmentStatus::NotEnrolled { .. }
             | EnrollmentStatus::WasEnrolled { .. }
-            | EnrollmentStatus::Error { .. } => return None, // We were never enrolled anyway, simply delete the enrollment record from the DB.
+            | EnrollmentStatus::EnrollError { .. } => return None, // We were never enrolled anyway, simply delete the enrollment record from the DB.
         };
         let enrollment = Self {
             slug: self.slug.clone(),
@@ -332,7 +332,7 @@ impl ExperimentEnrollment {
             },
             EnrollmentStatus::Disqualified { .. }
             | EnrollmentStatus::WasEnrolled { .. }
-            | EnrollmentStatus::Error { .. } => {
+            | EnrollmentStatus::EnrollError { .. } => {
                 // Nothing to do here.
                 self.clone()
             }
@@ -363,7 +363,7 @@ impl ExperimentEnrollment {
             EnrollmentStatus::NotEnrolled { .. }
             | EnrollmentStatus::Disqualified { .. }
             | EnrollmentStatus::WasEnrolled { .. }
-            | EnrollmentStatus::Error { .. } => self.clone(),
+            | EnrollmentStatus::EnrollError { .. } => self.clone(),
         };
         ExperimentEnrollment {
             status: updated.status.clone_with_nil_enrollment_id(),
@@ -430,7 +430,9 @@ impl ExperimentEnrollment {
                 },
                 EnrollmentChangeEventType::Disqualification,
             ),
-            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::Error { .. } => unreachable!(),
+            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::EnrollError { .. } => {
+                unreachable!()
+            }
         }
     }
 
@@ -452,7 +454,7 @@ impl ExperimentEnrollment {
             EnrollmentStatus::NotEnrolled { .. }
             | EnrollmentStatus::Disqualified { .. }
             | EnrollmentStatus::WasEnrolled { .. }
-            | EnrollmentStatus::Error { .. } => self.clone(),
+            | EnrollmentStatus::EnrollError { .. } => self.clone(),
         }
     }
 }
@@ -480,7 +482,7 @@ pub enum EnrollmentStatus {
         experiment_ended_at: u64, // unix timestamp in sec, used to GC old enrollments
     },
     // There was some error opting in.
-    Error {
+    EnrollError {
         // Ideally this would be an Error, but then we'd need to make Error
         // serde compatible, which isn't trivial nor desirable.
         reason: String,
@@ -521,7 +523,7 @@ impl EnrollmentStatus {
                 ref mut enrollment_id,
                 ..
             } => *enrollment_id = Uuid::nil(),
-            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::Error { .. } => (),
+            EnrollmentStatus::NotEnrolled { .. } | EnrollmentStatus::EnrollError { .. } => (),
         };
         updated
     }

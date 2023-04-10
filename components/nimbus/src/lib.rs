@@ -14,7 +14,9 @@ pub mod error;
 pub mod schema;
 pub mod versioning;
 
-pub use enrollment::{EnrolledFeature, EnrollmentChangeEvent, EnrollmentChangeEventType};
+pub use enrollment::{
+    EnrolledFeature, EnrollmentChangeEvent, EnrollmentChangeEventType, EnrollmentStatus,
+};
 pub use error::{NimbusError, Result};
 #[cfg(debug_assertions)]
 pub use evaluator::evaluate_enrollment;
@@ -77,7 +79,7 @@ cfg_if::cfg_if! {
     } else {
         pub use enrollment::{
             EnrolledFeatureConfig, ExperimentEnrollment, EnrolledReason, DisqualifiedReason,
-            NotEnrolledReason, EnrollmentStatus
+            NotEnrolledReason
         };
         use std::collections::HashSet;
         use std::str::FromStr;

@@ -34,3 +34,5 @@ Use the template below to make assigning a version number during the release cut
 - Changed the ordering around for optional arguments for Python compatibility ([#5460](https://github.com/mozilla/application-services/pull/5460)).
   - This does not change Kotlin or Swift APIs, but affects code that uses the uniffi generated FFI for `record_event` and `record_past_event` directly.
 - Added Cirrus client object for working with Nimbus in a static, stateless manner ([#5471](https://github.com/mozilla/application-services/pull/5471)).
+- Added Cirrus client UDL bindings ([#5475](https://github.com/mozilla/application-services/pull/5475)).
+  - *NOTE:* The Cirrus UDL bindings are only intended to function with Python, additional types should be set in the `uniffi.toml` if another language is needed.

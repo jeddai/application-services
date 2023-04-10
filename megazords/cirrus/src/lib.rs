@@ -8,7 +8,7 @@ use std::os::raw::c_char;
 pub use nimbus as cirrus;
 
 #[no_mangle]
-pub extern "C" fn full_megazord_get_version() -> *const c_char {
+pub extern "C" fn cirrus_megazord_get_version() -> *const c_char {
     VERSION_PTR.0
 }
 

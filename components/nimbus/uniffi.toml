@@ -11,7 +11,34 @@ imports = [ "org.json.JSONObject" ]
 into_custom = "JSONObject({})"
 from_custom = "{}.toString()"
 
+
 [bindings.swift]
 ffi_module_name = "MozillaRustComponents"
 ffi_module_filename = "nimbusFFI"
 generate_module_map = false
+
+
+# Python bindings for Cirrus
+# They should work fine for Nimbus too
+[bindings.python.custom_types.JsonObject]
+type_name = "dict"
+imports = ["json"]
+into_custom = "json.loads({})"
+from_custom = "json.dumps({})"
+
+[bindings.python.custom_types.Value]
+type_name = "any"
+imports = ["json"]
+into_custom = "json.loads({})"
+from_custom = "json.dumps({})"
+
+[bindings.python.custom_types.Uuid]
+type_name = "str"
+into_custom = "{}"
+from_custom = "{}"
+
+[bindings.python.custom_types.StringHashSet]
+type_name = "set"
+imports = ["json"]
+into_custom = "set(json.loads({}))"
+from_custom = "json.dumps(list({}))"

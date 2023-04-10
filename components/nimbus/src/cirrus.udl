@@ -177,6 +177,7 @@ typedef string StringHashSet;
 interface CirrusClient {
     constructor();
 
+    // Handles an enrollment request and returns an enrollment response.
     [Throws=NimbusError]
     EnrollmentResponse handle_enrollment(EnrollmentRequest request);
 };
